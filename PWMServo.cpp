@@ -211,6 +211,24 @@ void PWMServo::write(int angleArg)
 #endif
 }
 
+void PWMServo::writeMicroseconds(int microseconds)
+{
+	if (pin >= NUM_DIGITAL_PINS) return;
+  if (microseconds >> 4 < min16) microseconds = min16 << 4;
+  if (microseconds >> 4 > max16) microseconds = max16 << 4;
+	uint32_t duty = (int)((double)microseconds / 20000.0f * 4096.0f);
+#if TEENSYDUINO >= 137
+	noInterrupts();
+	uint32_t oldres = analogWriteResolution(12);
+	analogWrite(pin, duty);
+	analogWriteResolution(oldres);
+	interrupts();
+#else
+	analogWriteResolution(12);
+	analogWrite(pin, duty);
+#endif
+}
+
 uint8_t PWMServo::attached()
 {
 	if (pin >= NUM_DIGITAL_PINS) return 0;
